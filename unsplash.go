@@ -9,13 +9,13 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
-const (
-	UNSPLASH_API_KEY = "52cf_fhzMkca1xEohuF6CFsxc0i06f3tksGk4EL6HY8"
-	unsplashApiURL   = "https://api.unsplash.com/search/photos"
-	FIREBASE_API_KEY = "AIzaSyBVu89jQsohHOyoGtCb2tFgCYBg2qfmAO8"
+var (
+	unsplashAPIKey = os.Getenv("UNSPLASH_API_KEY")
+	unsplashApiURL = os.Getenv("UNSPLASH_API_URL")
 )
 
 type UnsplashResponse struct {
@@ -52,7 +52,7 @@ func fetchImage(eventType string) string {
 		log.Fatal(err)
 	}
 
-	req.Header.Set("Authorization", "Client-ID "+UNSPLASH_API_KEY)
+	req.Header.Set("Authorization", "Client-ID "+unsplashAPIKey)
 
 	response, err := client.Do(req)
 

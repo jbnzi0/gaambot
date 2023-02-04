@@ -8,11 +8,12 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 )
 
-const (
-	chessURL = "https://chess-services.heroku.app/v1"
+var (
+	chessURL = os.Getenv("CHESS_API_URL")
 )
 
 type Event struct {

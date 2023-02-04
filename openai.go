@@ -7,12 +7,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
-const (
-	apiURL = "https://api.openai.com/v1/completions"
-	apiKey = "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"
+var (
+	apiURL = os.Getenv("OPENAI_API_URL")
+	apiKey = os.Getenv("OPENAI_API_KEY")
 )
 
 type ChatGPTRequest struct {
