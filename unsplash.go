@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -32,11 +33,16 @@ type UnsplashResponse struct {
 	} `json:"results"`
 }
 
-func FetchImage(eventType string) string {
-	// eventType = url.QueryEscape(eventType)
-	fmt.Println("eventType:", url.QueryEscape(eventType))
+func UploadPicture(eventType string, eventId string) {
+	url := fetchImage(eventType)
+
+	// bytes := downloadImage(url)
+	fmt.Println(url, eventId)
+}
+
+func fetchImage(eventType string) string {
 	var res UnsplashResponse
-	url := unsplashApiURL + "?query=" + eventType
+	url := unsplashApiURL + "?query=" + url.QueryEscape(eventType)
 
 	client := &http.Client{}
 
@@ -68,7 +74,6 @@ func FetchImage(eventType string) string {
 		return "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.npr.org%2F2022%2F10%2F26%2F1131622796%2Ftheme-holiday-party-planning-tips&psig=AOvVaw3Ix5Ks0-ULMQ5YFyRobEvR&ust=1675300731665000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCIim3tmT8_wCFQAAAAAdAAAAABAE"
 	}
 
-	fmt.Println(res)
 	rand.Seed(time.Now().UnixNano())
 
 	min := 0
@@ -77,13 +82,24 @@ func FetchImage(eventType string) string {
 	return res.Results[rand.Intn(max-min+1)+min].Urls.Raw
 }
 
-func uploadToCloudStorage(eventId, url string) {
-	res, err := http.Get(url)
+func downloadImage(url string) []byte {
+	response, err := http.Get(url)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer res.Body.Close()
-	//TODO: Download image from url and save it to cloud storage in event bucket
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		log.Println(response.Status)
+	}
+
+	body, err := io.ReadAll(response.Body)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return body
 }
