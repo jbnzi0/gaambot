@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	chessURL = "https://chess-services.heroku.app/v1/"
+	chessURL = "https://chess-services.heroku.app/v1"
 )
 
 type Event struct {
@@ -41,6 +41,12 @@ type Event struct {
 
 type EventResponse struct {
 	Id string `json:"_id"`
+}
+
+type TicketRequest struct {
+	Name     string `json:"name"`
+	Price    int    `json:"price"`
+	Quantity int    `json:"quantity"`
 }
 
 // func GenerateEvent(token string) {
@@ -89,8 +95,43 @@ func GetRandomEventCategory() string {
 	return categories[rand.Intn(max-min+1)+min]
 }
 
+func createFreeTicket(eventId string, token string) {
+	url := chessURL + "/organizer/events/" + eventId + "/tickets"
+
+	data, err := json.Marshal(TicketRequest{
+		Name:     "Free",
+		Price:    0,
+		Quantity: 100,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer "+token)
+
+	response, err := client.Do(req)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if response.StatusCode != 201 {
+		fmt.Println(response.Status)
+		log.Fatal()
+	}
+}
+
 func CreateEvent(event Event, token string) string {
-	url := chessURL + "/bendo/events"
+	url := chessURL + "/events"
 
 	data, err := json.Marshal(event)
 
@@ -114,7 +155,7 @@ func CreateEvent(event Event, token string) string {
 		log.Fatal(err)
 	}
 
-	if response.StatusCode != 200 {
+	if response.StatusCode != 201 {
 		fmt.Println(response.Status)
 		log.Fatal()
 	}
