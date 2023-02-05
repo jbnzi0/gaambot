@@ -63,17 +63,10 @@ func main() {
 		go func() {
 			defer wg.Done()
 			generateEvent(tokens[0])
+			generateEvent(tokens[1])
+
 		}()
 
-	}
-
-	for i := 0; i < nbOfEvents; i++ {
-		wg.Add(1)
-		
-		go func() {
-			defer wg.Done()
-			generateEvent(tokens[0])
-		}()
 	}
 
 	wg.Wait()
