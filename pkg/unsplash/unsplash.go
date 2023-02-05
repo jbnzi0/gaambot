@@ -1,8 +1,7 @@
-package main
+package unsplash
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,11 +10,6 @@ import (
 	"net/url"
 	"os"
 	"time"
-)
-
-var (
-	unsplashAPIKey = os.Getenv("UNSPLASH_API_KEY")
-	unsplashApiURL = os.Getenv("UNSPLASH_API_URL")
 )
 
 type UnsplashResponse struct {
@@ -33,14 +27,12 @@ type UnsplashResponse struct {
 	} `json:"results"`
 }
 
-func UploadPicture(eventType string, eventId string) {
-	url := fetchImage(eventType)
+func FetchImage(eventType string) string {
+	var (
+		unsplashAPIKey = os.Getenv("UNSPLASH_API_KEY")
+		unsplashApiURL = os.Getenv("UNSPLASH_API_URL")
+	)
 
-	// bytes := downloadImage(url)
-	fmt.Println(url, eventId)
-}
-
-func fetchImage(eventType string) string {
 	var res UnsplashResponse
 	url := unsplashApiURL + "?query=" + url.QueryEscape(eventType)
 
@@ -77,12 +69,12 @@ func fetchImage(eventType string) string {
 	rand.Seed(time.Now().UnixNano())
 
 	min := 0
-	max := len(res.Results)
+	max := len(res.Results) - 1
 
 	return res.Results[rand.Intn(max-min+1)+min].Urls.Raw
 }
 
-func downloadImage(url string) []byte {
+func DownloadImage(url string) []byte {
 	response, err := http.Get(url)
 
 	if err != nil {

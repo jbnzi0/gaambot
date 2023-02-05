@@ -1,19 +1,13 @@
-package main
+package openai
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-)
-
-var (
-	apiURL = os.Getenv("OPENAI_API_URL")
-	apiKey = os.Getenv("OPENAI_API_KEY")
 )
 
 type ChatGPTRequest struct {
@@ -39,10 +33,12 @@ type ChatGPTResponse struct {
 	} `json:"usage"`
 }
 
-func GenerateEventName(eventType string, category string, country string) string {
-	text := "Can you generate a " + getRandomAdjective() + " event name for an event " + eventType + " " + category + " in " + country + " ?"
+func TextCompletion(text string) string {
+	var (
+		apiURL = os.Getenv("OPENAI_API_URL")
+		apiKey = os.Getenv("OPENAI_API_KEY")
+	)
 
-	fmt.Println(text)
 	payload := ChatGPTRequest{
 		Prompt:      text,
 		MaxTokens:   7,
@@ -51,50 +47,6 @@ func GenerateEventName(eventType string, category string, country string) string
 	}
 
 	data, err := json.Marshal(payload)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(data))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req.Header.Add("Authorization", "Bearer "+apiKey)
-	req.Header.Add("Content-Type", "application/json")
-
-	response, err := client.Do(req)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var result ChatGPTResponse
-	json.Unmarshal(body, &result)
-
-	return strings.TrimLeft(result.Choices[0].Text, "\r\n\"")
-}
-
-func GenerateDescription(title string, eventType string, category string, country string) string {
-	text := "Can you generate a short description for an event called " + title + " which is a " + eventType + " " + category + " in " + country + " ?"
-
-	data, err := json.Marshal(map[string]string{
-		"prompt":      text,
-		"max_tokens":  "20",
-		"model":       "text-davinci-003",
-		"temperature": "0.5",
-	})
 
 	if err != nil {
 		log.Fatal(err)
