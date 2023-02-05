@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/jbnzi0/gaambot/internal/datagenerator"
 	"github.com/jbnzi0/gaambot/internal/events"
@@ -11,10 +12,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func GenerateEvent(token string) {
+func generateEvent(token string) {
 	category := events.GetRandomEventCategory()
 	eventType := events.GetRandomEventType()
-	fmt.Println(category, eventType)
 	address, formattedAddress := datagenerator.GetRandomAddress()
 	title := openai.TextCompletion("Can you generate a " + datagenerator.GetRandomAdjective() + " event name for an event " + eventType + " " + category + " in " + formattedAddress + " ?")
 	description := openai.TextCompletion("Can you generate a short description for an event called " + title + " which is a " + eventType + " " + category + " in " + formattedAddress + " ?")
@@ -31,17 +31,19 @@ func GenerateEvent(token string) {
 	}
 
 	eventId := events.CreateEvent(event, token)
+	fmt.Printf("Event %v created with id: %v", title, eventId)
 	events.CreateFreeTicket(eventId, token)
+	events.ValidateEvent(eventId)
 }
 
-// func create() {
-// 	tokens := ConnectBotUsers()
+func orchestrate() {
+	tokens := events.ConnectBotUsers()
 
-// 	for _, token := range tokens {
-// 		fmt.Println("Token:", token)
-// 		// GenerateEvent(token)
-// 	}
-// }
+	for _, token := range tokens {
+		generateEvent(token)
+		os.Exit(-1)
+	}
+}
 
 func getEventPicture(eventType string) events.Picture {
 	url := unsplash.FetchImage(eventType)
@@ -54,10 +56,10 @@ func getEventPicture(eventType string) events.Picture {
 
 func main() {
 	err := godotenv.Load("../../.env")
+
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	// create()
-	GenerateEvent("")
-	// picture := getPicture("party", "testId")
+
+	orchestrate()
 }

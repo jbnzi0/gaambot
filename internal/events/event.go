@@ -14,10 +14,6 @@ import (
 	"github.com/jbnzi0/gaambot/internal/datagenerator"
 )
 
-var (
-	chessURL = os.Getenv("CHESS_API_URL")
-)
-
 type Event struct {
 	Title           string                `json:"title"`
 	Date            string                `json:"date"`
@@ -69,7 +65,7 @@ func GetRandomEventCategory() string {
 }
 
 func CreateFreeTicket(eventId string, token string) {
-	url := chessURL + "/organizer/events/" + eventId + "/tickets"
+	url := os.Getenv("CHESS_API_URL") + "/organizer/events/" + eventId + "/tickets"
 
 	data, err := json.Marshal(TicketRequest{
 		Name:     "Free",
@@ -98,13 +94,12 @@ func CreateFreeTicket(eventId string, token string) {
 	}
 
 	if response.StatusCode != 201 {
-		fmt.Println(response.Status)
-		log.Fatal()
+		log.Fatal(response.Status)
 	}
 }
 
 func CreateEvent(event Event, token string) string {
-	url := chessURL + "/events"
+	url := os.Getenv("CHESS_API_URL") + "/events"
 
 	data, err := json.Marshal(event)
 
@@ -129,8 +124,7 @@ func CreateEvent(event Event, token string) string {
 	}
 
 	if response.StatusCode != 201 {
-		fmt.Println(response.Status)
-		log.Fatal()
+		log.Fatal(response.Status)
 	}
 
 	defer response.Body.Close()
@@ -148,7 +142,7 @@ func CreateEvent(event Event, token string) string {
 }
 
 func ValidateEvent(eventId string) {
-	url := chessURL + "/bendo/events/" + eventId
+	url := os.Getenv("CHESS_API_URL") + "/bendo/events/" + eventId + "/review"
 
 	data, err := json.Marshal(map[string]string{
 		"status": "accepted",
@@ -174,7 +168,7 @@ func ValidateEvent(eventId string) {
 	}
 
 	if response.StatusCode != 200 {
-		fmt.Println(response.Status)
-		log.Fatal()
+		log.Fatal(response.Status)
 	}
+	fmt.Printf("\nEvent with id %v accepted successfully", eventId)
 }

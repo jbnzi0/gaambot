@@ -67,7 +67,7 @@ func SignIn(email string, password string) string {
 }
 
 func ReadUsersFile() []User {
-	file, err := os.Open("./assets/users.csv")
+	file, err := os.Open("../../assets/users.csv")
 
 	if err != nil {
 		log.Fatal(err)
