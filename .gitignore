@@ -20,4 +20,4 @@
 go.work
 go.work.sum
 
-./assets/users.csv
+assets/users.csv
