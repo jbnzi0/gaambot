@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
+	"sync"
 
 	"github.com/jbnzi0/gaambot/internal/datagenerator"
 	"github.com/jbnzi0/gaambot/internal/events"
@@ -31,18 +31,10 @@ func generateEvent(token string) {
 	}
 
 	eventId := events.CreateEvent(event, token)
-	fmt.Printf("Event %v created with id: %v", title, eventId)
+	fmt.Printf("\nEvent %v created with id: %v", title, eventId)
 	events.CreateFreeTicket(eventId, token)
 	events.ValidateEvent(eventId)
-}
 
-func orchestrate() {
-	tokens := events.ConnectBotUsers()
-
-	for _, token := range tokens {
-		generateEvent(token)
-		os.Exit(-1)
-	}
 }
 
 func getEventPicture(eventType string) events.Picture {
@@ -55,11 +47,35 @@ func getEventPicture(eventType string) events.Picture {
 }
 
 func main() {
+	var wg sync.WaitGroup
 	err := godotenv.Load("../../.env")
 
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	orchestrate()
+	tokens := events.ConnectBotUsers()
+	nbOfEvents := 5
+
+	for i := 0; i < nbOfEvents; i++ {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			generateEvent(tokens[0])
+		}()
+
+	}
+
+	for i := 0; i < nbOfEvents; i++ {
+		wg.Add(1)
+		
+		go func() {
+			defer wg.Done()
+			generateEvent(tokens[0])
+		}()
+	}
+
+	wg.Wait()
+
 }

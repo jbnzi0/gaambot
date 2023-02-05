@@ -3,7 +3,6 @@ package events
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -170,5 +169,4 @@ func ValidateEvent(eventId string) {
 	if response.StatusCode != 200 {
 		log.Fatal(response.Status)
 	}
-	fmt.Printf("\nEvent with id %v accepted successfully", eventId)
 }
