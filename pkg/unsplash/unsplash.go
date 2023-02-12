@@ -2,14 +2,14 @@ package unsplash
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
-	"time"
 )
 
 type UnsplashResponse struct {
@@ -27,14 +27,14 @@ type UnsplashResponse struct {
 	} `json:"results"`
 }
 
-func FetchImage(eventType string) string {
+func Search(title string) string {
 	var (
 		unsplashAPIKey = os.Getenv("UNSPLASH_API_KEY")
 		unsplashApiURL = os.Getenv("UNSPLASH_API_URL")
 	)
 
 	var res UnsplashResponse
-	url := unsplashApiURL + "?query=" + url.QueryEscape(eventType)
+	url := unsplashApiURL + "?query=" + url.PathEscape(title)
 
 	client := &http.Client{}
 
@@ -45,6 +45,14 @@ func FetchImage(eventType string) string {
 	}
 
 	req.Header.Set("Authorization", "Client-ID "+unsplashAPIKey)
+
+	dump, err := httputil.DumpRequestOut(req, false)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(dump))
 
 	response, err := client.Do(req)
 
@@ -66,12 +74,7 @@ func FetchImage(eventType string) string {
 		return "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.npr.org%2F2022%2F10%2F26%2F1131622796%2Ftheme-holiday-party-planning-tips&psig=AOvVaw3Ix5Ks0-ULMQ5YFyRobEvR&ust=1675300731665000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCIim3tmT8_wCFQAAAAAdAAAAABAE"
 	}
 
-	rand.Seed(time.Now().UnixNano())
-
-	min := 0
-	max := len(res.Results) - 1
-
-	return res.Results[rand.Intn(max-min+1)+min].Urls.Raw
+	return res.Results[0].Urls.Raw
 }
 
 func DownloadImage(url string) []byte {

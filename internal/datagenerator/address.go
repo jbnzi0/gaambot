@@ -2,6 +2,7 @@ package datagenerator
 
 import (
 	"math/rand"
+	"time"
 )
 
 type Address struct {
@@ -18,6 +19,7 @@ type AddressComponents struct {
 }
 
 func GetRandomAddress() (Address, string) {
+	rand.Seed(time.Now().UnixNano())
 
 	components := []Address{
 		{

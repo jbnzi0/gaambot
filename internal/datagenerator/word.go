@@ -1,8 +1,13 @@
 package datagenerator
 
-import "math/rand"
+import (
+	"math/rand"
+	"time"
+)
 
 func GetRandomAdjective() string {
+	rand.Seed(time.Now().UnixNano())
+
 	adjectives := []string{
 		"authentic",
 		"initial",
