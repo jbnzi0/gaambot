@@ -3,26 +3,28 @@ package events
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/jbnzi0/gaambot/internal/datagenerator"
+	"github.com/jbnzi0/gaambot/pkg/unsplash"
 )
 
 type Event struct {
-	Title           string                `json:"title"`
-	Date            string                `json:"date"`
-	Price           int64                 `json:"price"`
-	MaxParticipants int64                 `json:"maxParticipants"`
-	EventType       string                `json:"type"`
-	Category        string                `json:"category"`
-	Address         datagenerator.Address `json:"address"`
-	Picture         Picture               `json:"picture"`
-	Description     string                `json:"description"`
+	Title       string                `json:"title"`
+	Date        string                `json:"date"`
+	Price       int64                 `json:"price"`
+	EventType   string                `json:"type"`
+	Category    string                `json:"category"`
+	Address     datagenerator.Address `json:"address"`
+	Picture     Picture               `json:"picture"`
+	Description string                `json:"description"`
 }
 
 type Picture struct {
@@ -40,14 +42,6 @@ type TicketRequest struct {
 	Quantity int    `json:"quantity"`
 }
 
-func GetRandomEventType() string {
-	rand.Seed(time.Now().UnixNano())
-	types := []string{"public", "exclusive"}
-	min := 0
-	max := len(types) - 1
-	return types[rand.Intn(max-min+1)+min]
-}
-
 func GetRandomEventCategory() string {
 	rand.Seed(time.Now().UnixNano())
 	categories := []string{
@@ -63,7 +57,7 @@ func GetRandomEventCategory() string {
 	return categories[rand.Intn(max-min+1)+min]
 }
 
-func CreateFreeTicket(eventId string, token string) {
+func createFreeTicket(eventId string, token string) {
 	url := os.Getenv("CHESS_API_URL") + "/organizer/events/" + eventId + "/tickets"
 
 	data, err := json.Marshal(TicketRequest{
@@ -97,7 +91,7 @@ func CreateFreeTicket(eventId string, token string) {
 	}
 }
 
-func CreateEvent(event Event, token string) string {
+func createEvent(event Event, token string) string {
 	url := os.Getenv("CHESS_API_URL") + "/events"
 
 	data, err := json.Marshal(event)
@@ -140,7 +134,7 @@ func CreateEvent(event Event, token string) string {
 	return result.Id
 }
 
-func ValidateEvent(eventId string) {
+func validateEvent(eventId string) {
 	url := os.Getenv("CHESS_API_URL") + "/bendo/events/" + eventId + "/review"
 
 	data, err := json.Marshal(map[string]string{
@@ -169,4 +163,37 @@ func ValidateEvent(eventId string) {
 	if response.StatusCode != 200 {
 		log.Fatal(response.Status)
 	}
+}
+
+func getEventPicture(title string) Picture {
+	url := unsplash.Search(strings.ToLower(title))
+
+	return Picture{
+		BucketPath: url,
+		Url:        url,
+	}
+}
+
+func GenerateEvent(token string, data PartialEvent) {
+	category := data.Category
+	address, formattedAddress := datagenerator.GetRandomAddress()
+	title := data.Name
+	description := data.Description
+	picture := getEventPicture(title)
+
+	event := Event{
+		Category:    category,
+		Address:     address,
+		Picture:     picture,
+		EventType:   "exclusive",
+		Date:        datagenerator.GetRandomDate(),
+		Description: description,
+		Title:       title,
+	}
+
+	eventId := createEvent(event, token)
+	fmt.Printf("\nEvent \"%v\" created in %v with ID: %v\n", title, formattedAddress, eventId)
+	createFreeTicket(eventId, token)
+	validateEvent(eventId)
+
 }
