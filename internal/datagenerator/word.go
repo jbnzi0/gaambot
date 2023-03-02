@@ -43,7 +43,6 @@ func GetRandomAdjective() string {
 		"crazy",
 	}
 
-	min := 0
 	max := len(adjectives) - 1
-	return adjectives[rand.Intn(max-min+1)+min]
+	return adjectives[rand.Intn(max+1)]
 }

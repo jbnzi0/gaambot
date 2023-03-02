@@ -18,10 +18,9 @@ type PartialEvent struct {
 
 func GetRandomEventData(events []PartialEvent) PartialEvent {
 	rand.Seed(time.Now().UnixNano())
-	min := 0
 	max := len(events) - 1
 
-	return events[rand.Intn(max-min+1)+min]
+	return events[rand.Intn(max+1)]
 }
 
 func ReadEventsFile() []PartialEvent {

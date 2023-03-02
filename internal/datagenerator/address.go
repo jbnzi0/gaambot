@@ -42,10 +42,9 @@ func GetRandomAddress() (Address, string) {
 		},
 	}
 
-	min := 0
 	max := len(components) - 1
 
-	addressComponent := components[rand.Intn(max-min+1)+min]
+	addressComponent := components[rand.Intn(max+1)]
 
 	return addressComponent, addressComponent.FormattedAddress
 }

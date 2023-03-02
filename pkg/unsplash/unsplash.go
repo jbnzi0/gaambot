@@ -6,10 +6,12 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"time"
 )
 
 type UnsplashResponse struct {
@@ -34,8 +36,7 @@ func Search(title string) string {
 	)
 
 	var res UnsplashResponse
-	url := unsplashApiURL + "?query=" + url.PathEscape(title)
-
+	url := unsplashApiURL + "?query=" + url.QueryEscape(title)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -74,7 +75,10 @@ func Search(title string) string {
 		return "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.npr.org%2F2022%2F10%2F26%2F1131622796%2Ftheme-holiday-party-planning-tips&psig=AOvVaw3Ix5Ks0-ULMQ5YFyRobEvR&ust=1675300731665000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCIim3tmT8_wCFQAAAAAdAAAAABAE"
 	}
 
-	return res.Results[0].Urls.Raw
+	rand.Seed(time.Now().UnixNano())
+	max := len(res.Results) - 1
+	picture := res.Results[rand.Intn(max+1)]
+	return picture.Urls.Raw
 }
 
 func DownloadImage(url string) []byte {
