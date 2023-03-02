@@ -3,7 +3,6 @@ package openai
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -41,7 +40,7 @@ type ChatGPTResponse struct {
 	} `json:"usage"`
 }
 
-func ChatCompletion(text string) string {
+func Chat(text string) string {
 	var (
 		apiURL = os.Getenv("OPENAI_API_URL")
 		apiKey = os.Getenv("OPENAI_API_KEY")
@@ -90,6 +89,7 @@ func ChatCompletion(text string) string {
 	var result ChatGPTResponse
 	json.Unmarshal(body, &result)
 
-	fmt.Println(result.Choices)
-	return strings.TrimLeft(result.Choices[0].Message.Content, "\r\n\"")
+	answer := strings.TrimLeft(result.Choices[0].Message.Content, "\r\n\"")
+
+	return strings.ReplaceAll(answer, "\"", "")
 }
