@@ -3,6 +3,7 @@ package openai
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,11 +11,17 @@ import (
 	"strings"
 )
 
+type ChatGPTConversation struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
 type ChatGPTRequest struct {
-	Prompt      string  `json:"prompt"`
-	MaxTokens   int     `json:"max_tokens"`
-	Model       string  `json:"model"`
-	Temperature float32 `json:"temperature"`
+	Messages         []ChatGPTConversation `json:"messages"`
+	MaxTokens        int                   `json:"max_tokens"`
+	Model            string                `json:"model"`
+	Temperature      float32               `json:"temperature"`
+	FrequencyPenalty int                   `json:"frequency_penalty"`
 }
 
 type ChatGPTResponse struct {
@@ -23,8 +30,9 @@ type ChatGPTResponse struct {
 	Created int64  `json:"created"`
 	Model   string `json:"model"`
 	Choices []struct {
-		Text         string `json:"text"`
-		FinishReason string `json:"finish_reason"`
+		Message      ChatGPTConversation `json:"message"`
+		Index        int                 `json:"index"`
+		FinishReason string              `json:"finish_reason"`
 	} `json:"choices"`
 	Usage struct {
 		PromptTokens     string `json:"prompt_tokens"`
@@ -33,17 +41,20 @@ type ChatGPTResponse struct {
 	} `json:"usage"`
 }
 
-func TextCompletion(text string) string {
+func ChatCompletion(text string) string {
 	var (
 		apiURL = os.Getenv("OPENAI_API_URL")
 		apiKey = os.Getenv("OPENAI_API_KEY")
 	)
 
+	message := ChatGPTConversation{Role: "user", Content: text}
+
 	payload := ChatGPTRequest{
-		Prompt:      text,
-		MaxTokens:   7,
-		Model:       "text-davinci-003",
-		Temperature: 0.5,
+		Messages:         []ChatGPTConversation{message},
+		MaxTokens:        35,
+		Model:            "gpt-3.5-turbo",
+		Temperature:      1,
+		FrequencyPenalty: 2,
 	}
 
 	data, err := json.Marshal(payload)
@@ -79,5 +90,6 @@ func TextCompletion(text string) string {
 	var result ChatGPTResponse
 	json.Unmarshal(body, &result)
 
-	return strings.TrimLeft(result.Choices[0].Text, "\r\n\"")
+	fmt.Println(result.Choices)
+	return strings.TrimLeft(result.Choices[0].Message.Content, "\r\n\"")
 }
