@@ -18,14 +18,14 @@ import (
 )
 
 type Event struct {
-	Title       string                `json:"title"`
-	Date        string                `json:"date"`
-	Price       int64                 `json:"price"`
-	EventType   string                `json:"type"`
-	Category    string                `json:"category"`
-	Address     datagenerator.Address `json:"address"`
-	Picture     Picture               `json:"picture"`
-	Description string                `json:"description"`
+	Title        string                `json:"title"`
+	Date         string                `json:"date"`
+	EventType    string                `json:"type"`
+	Category     string                `json:"category"`
+	Address      datagenerator.Address `json:"address"`
+	Picture      Picture               `json:"picture"`
+	Description  string                `json:"description"`
+	RefundPolicy string                `json:"refundPolicy"`
 }
 
 type Picture struct {
@@ -44,7 +44,8 @@ type TicketRequest struct {
 }
 
 type UpdateEventRequest struct {
-	Picture Picture `json:"picture"`
+	// Picture      Picture `json:"picture"`
+	RefundPolicy string `json:"refundPolicy"`
 }
 
 func GetRandomEventCategory() string {
@@ -138,12 +139,10 @@ func createEvent(event Event, token string) string {
 	return result.Id
 }
 
-func UpdateEventImage(eventId string, token string, pictureQuery string) string {
+func UpdateEvent(eventId string, token string, payload UpdateEventRequest) string {
 	url := os.Getenv("CHESS_API_URL") + "/events/" + eventId
 
-	data, err := json.Marshal(UpdateEventRequest{
-		Picture: getEventPicture(pictureQuery),
-	})
+	data, err := json.Marshal(payload)
 
 	if err != nil {
 		log.Fatal(err)
@@ -180,7 +179,7 @@ func UpdateEventImage(eventId string, token string, pictureQuery string) string 
 	var result EventResponse
 	json.Unmarshal(body, &result)
 
-	fmt.Println(result)
+	fmt.Println("Updated eventId: " + result.Id)
 	return result.Id
 }
 
@@ -231,15 +230,15 @@ func GenerateEvent(token string, data PartialEvent) {
 	description := openai.Chat("Short description for a " + category + " called " + title + " in " + formattedAddress)
 	picture := getEventPicture(category + " " + title)
 
-	fmt.Println(picture)
 	event := Event{
-		Category:    category,
-		Address:     address,
-		Picture:     picture,
-		EventType:   "exclusive",
-		Date:        datagenerator.GetRandomDate(),
-		Description: description,
-		Title:       title,
+		Category:     category,
+		Address:      address,
+		Picture:      picture,
+		EventType:    "exclusive",
+		Date:         datagenerator.GetRandomDate(),
+		Description:  description,
+		Title:        title,
+		RefundPolicy: "up-to-seven-days",
 	}
 
 	eventId := createEvent(event, token)
