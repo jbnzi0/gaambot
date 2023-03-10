@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/jbnzi0/gaambot/internal/datagenerator"
-	"github.com/jbnzi0/gaambot/pkg/openai"
+	"github.com/jbnzi0/gaambot/pkg/chatgpt"
 	"github.com/jbnzi0/gaambot/pkg/unsplash"
 )
 
@@ -226,8 +226,8 @@ func getEventPicture(title string) Picture {
 func GenerateEvent(token string, data PartialEvent) {
 	category := data.Category
 	address, formattedAddress := datagenerator.GetRandomAddress()
-	title := openai.Chat("Short " + datagenerator.GetRandomAdjective() + " event name for a " + category + " in" + formattedAddress)
-	description := openai.Chat("Short description for a " + category + " called " + title + " in " + formattedAddress)
+	title := chatgpt.Chat("Short " + datagenerator.GetRandomAdjective() + " event name for a " + category + " in" + formattedAddress)
+	description := chatgpt.Chat("Short description for a " + category + " called " + title + " in " + formattedAddress)
 	picture := getEventPicture(category + " " + title)
 
 	event := Event{
