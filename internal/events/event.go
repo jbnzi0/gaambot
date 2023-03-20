@@ -13,19 +13,21 @@ import (
 	"time"
 
 	"github.com/jbnzi0/gaambot/internal/datagenerator"
+	"github.com/jbnzi0/gaambot/internal/maps"
 	"github.com/jbnzi0/gaambot/pkg/chatgpt"
 	"github.com/jbnzi0/gaambot/pkg/unsplash"
+	"github.com/kr/pretty"
 )
 
 type Event struct {
-	Title        string                `json:"title"`
-	Date         string                `json:"date"`
-	EventType    string                `json:"type"`
-	Category     string                `json:"category"`
-	Address      datagenerator.Address `json:"address"`
-	Picture      Picture               `json:"picture"`
-	Description  string                `json:"description"`
-	RefundPolicy string                `json:"refundPolicy"`
+	Title        string       `json:"title"`
+	Date         string       `json:"date"`
+	EventType    string       `json:"type"`
+	Category     string       `json:"category"`
+	Address      maps.Address `json:"address"`
+	Picture      Picture      `json:"picture"`
+	Description  string       `json:"description"`
+	RefundPolicy string       `json:"refundPolicy"`
 }
 
 type Picture struct {
@@ -225,7 +227,7 @@ func getEventPicture(title string) Picture {
 
 func GenerateEvent(token string, data PartialEvent) {
 	category := data.Category
-	address, formattedAddress := datagenerator.GetRandomAddress()
+	address, formattedAddress := maps.SearchPlace(maps.GetRandomNeighbourhood())
 	title := chatgpt.Chat("Short " + datagenerator.GetRandomAdjective() + " event name for a " + category + " in" + formattedAddress)
 	description := chatgpt.Chat("Short description for a " + category + " called " + title + " in " + formattedAddress)
 	picture := getEventPicture(category + " " + title)
@@ -242,7 +244,8 @@ func GenerateEvent(token string, data PartialEvent) {
 	}
 
 	eventId := createEvent(event, token)
-	fmt.Printf("\nEvent \"%v\" created in %v with ID: %v\n", title, formattedAddress, eventId)
+	pretty.Printf("\nEvent \"%v\" created in %v with ID: %v\n", title, formattedAddress, eventId)
+
 	createFreeTicket(eventId, token)
 	validateEvent(eventId)
 

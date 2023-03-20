@@ -15,7 +15,6 @@ func orchestrate() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
 	tokens := events.ConnectBotUsers()
 	nbOfEvents := 5
 
