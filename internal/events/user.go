@@ -1,7 +1,6 @@
 package events
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -67,42 +66,7 @@ func SignIn(email string, password string) string {
 }
 
 func ReadUsersFile() []User {
-	file, err := os.Open("../../assets/users.csv")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer file.Close()
-
-	reader := csv.NewReader(file)
-	data, err := reader.ReadAll()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return createUsersList(data)
-}
-
-func createUsersList(data [][]string) []User {
-	var usersList []User
-
-	for i, line := range data {
-		if i <= 0 {
-			continue
-		}
-
-		var user User
-		for j, field := range line {
-			if j == 0 {
-				user.email = field
-				continue
-			}
-			user.password = field
-		}
-		usersList = append(usersList, user)
-	}
-
-	return usersList
+	return []User{
+		{email: os.Getenv("DEV_BOT_EMAIL"), password: os.Getenv("DEV_BOT_PWD")},
+		{email: os.Getenv("INFO_BOT_EMAIL"), password: os.Getenv("INFO_BOT_PWD")}}
 }

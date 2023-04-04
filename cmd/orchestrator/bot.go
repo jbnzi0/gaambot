@@ -1,20 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/jbnzi0/gaambot/internal/events"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 )
 
 func orchestrate() {
 	var wg sync.WaitGroup
-	err := godotenv.Load("../../.env")
 
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 	tokens := events.ConnectBotUsers()
 	nbOfEvents := 5
 
@@ -35,7 +34,32 @@ func orchestrate() {
 	wg.Wait()
 }
 
-// TODO: Add cron to run it every week
+func loadDevEnvironment() {
+	env := os.Getenv("ENVIRONMENT")
+
+	if env == "production" {
+		return
+	}
+
+	err := godotenv.Load("../../.env")
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
 func main() {
-	orchestrate()
+	loadDevEnvironment()
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	scheduler := cron.New()
+
+	scheduler.AddFunc("0 6 * * *", func() {
+		fmt.Println("Running CRON...")
+		orchestrate()
+		fmt.Println("Creation of events done!")
+	})
+
+	scheduler.Start()
+	wg.Wait()
 }
